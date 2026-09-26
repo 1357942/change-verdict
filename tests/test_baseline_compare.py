@@ -236,7 +236,9 @@ class BaselineCompareTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(payload["classification"], "candidate_regression_evidence")
         log = (self.root / "evidence" / "baseline.log").read_text(encoding="utf-8")
-        self.assertIn("中文失败", log)
+        # Pytest may escape non-ASCII assertion text on Windows CI. Both forms
+        # are valid UTF-8 log text and preserve the failure without loss.
+        self.assertTrue("中文失败" in log or "\\u4e2d\\u6587\\u5931\\u8d25" in log, log)
         self.assertFalse(payload["baseline"]["log_decode_lossy"])
         if payload["baseline"]["log_source_encoding"] != "utf-8":
             self.assertTrue(Path(payload["baseline"]["raw_log"]).is_file())
